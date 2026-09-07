@@ -31,9 +31,30 @@ as the reference example.
 ## Repo layout
 
 ```
-guides/   One markdown file per guide, self-contained.
-.ai/      Agent-maintained project context (see documentation-mcp).
+guides/            One markdown file per guide, self-contained.
+.ai/               Agent-maintained project context (see documentation-mcp).
+.claude/skills/    /create-guide skill for Claude Code (see below).
+.gemini/commands/  /create-guide command for Gemini CLI (same behavior).
 ```
+
+## Creating a guide
+
+This repo ships a `/create-guide` command for both Claude Code
+(`.claude/skills/create-guide/SKILL.md`) and Gemini CLI
+(`.gemini/commands/create-guide.toml`). Run it from anywhere inside a clone of this repo, in
+whichever CLI you're using:
+
+```
+/create-guide upgrade to Next.js 15
+```
+
+It interviews you about the guide's scope, researches current facts where accuracy matters
+(current versions, breaking changes), and writes a new file straight into `guides/` following
+the runbook format below. Prefer it over writing a guide by hand — it bakes in the format rules
+so you don't have to re-derive them.
+
+Both versions carry the same instructions; if you edit one to fix a bug or improve the format
+rules, port the change to the other too.
 
 ## Distribution
 
