@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1.0",
+  "last_scan_sha": null,
+  "last_synthesis_at": "2026-09-07T06:03:18.769Z",
+  "evidence_pending_count": 0,
+  "evidence_pending_corrections": 0,
+  "needs_resync": false,
+  "doc_index": {
+    "docs": [],
+    "context": [
+      "purpose.md"
+    ]
+  }
+}

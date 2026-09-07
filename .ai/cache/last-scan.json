@@ -1,0 +1,17 @@
+{
+  "git_sha": null,
+  "manifest_files": [],
+  "ci_config": [],
+  "infra_signals": [],
+  "existing_docs": [],
+  "existing_agent_docs": [],
+  "open_questions": [
+    "What is the primary purpose of this project, and what business problem does it solve?",
+    "Who are the target users or stakeholders?",
+    "What does 'done'/success look like for this project?",
+    "Are there hard constraints (compliance, performance, security) that any change must respect?",
+    "No README found — is there existing documentation elsewhere?",
+    "No CI configuration detected — is testing/deployment automated elsewhere?",
+    "No infra/deployment config found — how is this deployed?"
+  ]
+}
