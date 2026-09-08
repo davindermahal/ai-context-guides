@@ -1,4 +1,5 @@
 ---
+name: create-guide
 description: Interview the user about a software implementation or upgrade they want documented, research current facts where accuracy matters, and produce a highly detailed, codebase-agnostic implementation guide that a future AI agent can read and turn into a concrete plan for whatever project it's actually pointed at. Always saves into this repo's guides/ folder. Only run when explicitly invoked as /create-guide.
 argument-hint: [optional: topic for the guide, e.g. "upgrade to Next.js 15" or "add Stripe billing"]
 disable-model-invocation: true

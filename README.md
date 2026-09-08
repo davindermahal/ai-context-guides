@@ -31,18 +31,24 @@ as the reference example.
 ## Repo layout
 
 ```
-guides/            One markdown file per guide, self-contained.
-.ai/               Agent-maintained project context (see documentation-mcp).
-.claude/skills/    /create-guide skill for Claude Code (see below).
-.gemini/commands/  /create-guide command for Gemini CLI (same behavior).
+guides/           One markdown file per guide, self-contained.
+.ai/              Agent-maintained project context (see documentation-mcp).
+.claude/skills/   create-guide skill — the canonical SKILL.md (see below).
+.agents/skills/   Symlink to .claude/skills/, for the open Agent Skills standard.
 ```
 
 ## Creating a guide
 
-This repo ships a `/create-guide` command for both Claude Code
-(`.claude/skills/create-guide/SKILL.md`) and Gemini CLI
-(`.gemini/commands/create-guide.toml`). Run it from anywhere inside a clone of this repo, in
-whichever CLI you're using:
+This repo ships a `create-guide` skill, written once as
+[`.claude/skills/create-guide/SKILL.md`](.claude/skills/create-guide/SKILL.md) in the open
+[Agent Skills](https://agentskills.io) format. That single file is the source of truth for every
+agent tool: `.agents/skills/create-guide` is a symlink to it, not a copy, so any tool that follows
+the standard (Gemini CLI, Cursor, OpenCode, Codex CLI, and others) discovers the same instructions
+without a separate port. Claude Code itself still only reads `.claude/skills/` directly (it doesn't
+yet follow the `.agents/skills/` alias), which is why the real file lives there and the alias points
+at it, not the other way around.
+
+Run it from anywhere inside a clone of this repo, in whichever tool you're using:
 
 ```
 /create-guide upgrade to Next.js 15
@@ -53,8 +59,8 @@ It interviews you about the guide's scope, researches current facts where accura
 the runbook format below. Prefer it over writing a guide by hand — it bakes in the format rules
 so you don't have to re-derive them.
 
-Both versions carry the same instructions; if you edit one to fix a bug or improve the format
-rules, port the change to the other too.
+Editing the skill: always edit `.claude/skills/create-guide/SKILL.md` — never write directly under
+`.agents/skills/`, since that path is just a symlink and isn't real storage.
 
 ## Distribution
 
