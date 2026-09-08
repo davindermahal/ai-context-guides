@@ -94,25 +94,68 @@ Don't turn this into a long requirements interview. One good open question plus 
 sharp follow-ups is the right amount — the goal is enough signal to write a genuinely useful guide,
 not to extract a full spec.
 
-## Step 2: Research, when accuracy depends on current facts
+## Step 2: Research — verify, never assume
 
-Use WebSearch/WebFetch to verify anything where being wrong or stale would make the guide actively
-harmful: current major version numbers, breaking changes between versions, current recommended
-APIs/patterns, or deprecated approaches. Do this whenever the topic involves a specific
-library/framework/platform — don't skip it just because the topic feels familiar; training data
-goes stale exactly where library APIs move fastest.
+Never answer from memory or training data when a fact can be checked instead. Training data goes
+stale exactly where library/framework APIs move fastest, and a wrong "current" fact doesn't just
+sit there unused — it actively misleads a future, less-capable agent that has no way to know it's
+stale. Treat every claim about versions, APIs, defaults, config keys, or behavior as something to
+verify with WebSearch/WebFetch before it goes in the guide, never as something to recall and trust.
+Do this whenever the topic involves a specific library/framework/platform — don't skip it because
+the topic feels familiar; familiarity is not verification.
 
-Skip research for guides about stable, general architectural patterns where there's nothing recent
-to verify (e.g. "how to structure a hexagonal architecture") — use judgment, don't fetch pages for
-the sake of it.
+Skip research only for guides about stable, general architectural patterns where nothing
+version-specific exists to check (e.g. "how to structure a hexagonal architecture"). If the topic
+names any concrete technology at all, this exception does not apply — go verify.
 
-Keep track of every source you actually used — they go in the guide's References section (Step 3,
-item 8). Never cite a source you didn't actually fetch.
+### For upgrade/migration guides specifically: read every CHANGELOG, not just the highlights
+
+A guide built from a single blog post's "top breaking changes" list is not comprehensive — blog
+summaries skew toward what's interesting to write about, not what will actually break someone's
+build. Do all of the following before writing anything:
+
+1. Pin down the exact starting version and exact target version the guide covers. If `$ARGUMENTS`
+   or the user's answer in Step 1 leaves either end ambiguous (e.g. "Symfony 5 to 6" doesn't say
+   which 5.x or which 6.x), ask a short follow-up rather than guessing one.
+2. Find the project's own primary changelog source(s) — never a third-party summary or aggregator
+   site as the primary source:
+   - `CHANGELOG.md` / `CHANGELOG.txt` / `HISTORY.md` in the project's own repository.
+   - Dedicated per-version upgrade files, if the project publishes them (e.g. Symfony ships one
+     `UPGRADE-X.Y.md` per minor version; Rails and Django ship per-version upgrade guides in their
+     docs).
+   - The project's official "release notes" / "what's new" pages on its own docs site.
+   - The repo's GitHub/GitLab "Releases" page, only as a fallback when no dedicated changelog file
+     exists.
+3. Enumerate **every** version between the start and target — every major, every minor, and, if the
+   project documents breaking changes at the patch level, every patch. Do not jump straight from the
+   start version's notes to the target version's notes: each intermediate version carries its own
+   deltas, and skipping any one of them is exactly how the guide ends up silently missing a real
+   breaking change that a project sitting on that intermediate version would hit.
+4. WebFetch the changelog/upgrade notes for every version enumerated in step 3, individually — not
+   just the two endpoints.
+5. From each version's notes, extract every breaking change, removed feature, deprecation (note the
+   version it was deprecated in and the version it's slated for or actually removed in), default-value
+   change, and behavior change — not only the ones a summary would flag as "major." Deprecations
+   matter even when they don't error yet: a target project sitting several versions behind the
+   target may already depend on something that was deprecated a few versions ago and gets removed
+   partway through the upgrade path this guide describes.
+6. Compile the full result into the version-by-version breaking-changes list required by Step 3
+   (new item 5, below) — this list is the backbone of the guide's implementation plan, not a
+   supplementary appendix to skim past.
+
+Keep track of every source actually fetched — they go in the guide's References section (Step 3,
+final item). Never cite a source you didn't actually fetch, and never paper over a gap with a guess:
+if a specific version's official changelog can't be located, say so explicitly in the guide (which
+version, and what you tried) rather than silently omitting that version's coverage.
 
 ## Step 3: Structure the guide
 
-Write a single Markdown document with these sections (adapt section depth to the topic's actual
-complexity — a small, well-scoped guide shouldn't be padded to hit a template):
+Write a single Markdown document with these sections. Err toward comprehensiveness: a longer guide
+that captures every real edge case beats a shorter one that reads cleanly but leaves one out — a
+future agent only pays for the lines it actually needs (it skips what doesn't apply) but pays
+dearly for a line that was cut to save space. Only shorten or omit a section when it's genuinely
+inapplicable to the topic (e.g. drop "Rollback / risk notes" entirely for a greenfield-only guide),
+never to keep the document short for its own sake:
 
 1. **Title + one-line purpose** — what this guide produces when applied.
 2. **When to use this guide** — the trigger conditions/signals that mean this guide applies, so a
@@ -124,13 +167,31 @@ complexity — a small, well-scoped guide shouldn't be padded to hit a template)
    guide to apply as written. Be explicit that the future agent must verify these against the real
    project rather than assume them.
 4. **Investigation checklist** — concrete things the future agent must go check in *its* target
-   project before planning: current versions of relevant dependencies, relevant existing
-   config/code/tests, naming conventions already in use, anything this guide's steps will branch on.
-   This section is what makes the guide reusable across projects: it converts "the guide would need
-   to know X" into "tell the agent to go find X." Give the literal command to run for each check
-   (not just "check the X version" — the actual `grep`/`cat`/`composer show`/etc. invocation), and
-   say what each possible result means, per the capability-level rule above.
-5. **Step-by-step implementation plan template** — the real content. Ordered phases/steps, each
+   project before planning. Be exhaustive here, not representative: every dependency this guide's
+   steps touch or branch on, every relevant existing config file, current versions (not just the
+   headline framework/library — its supporting packages, runtime, and build tooling too where the
+   steps depend on them), existing code/test conventions, and CI/build config if the upgrade or
+   feature touches how the project builds or deploys. This section is what makes the guide reusable
+   across projects: it converts "the guide would need to know X" into "tell the agent to go find X."
+   A checklist item you left out doesn't just make the guide less thorough — it's a decision point
+   later in the plan that the future agent will hit with no signal to branch on. For each item, give
+   the literal command to run (not just "check the X version" — the actual
+   `grep`/`cat`/`composer show`/etc. invocation), and say what each possible result means, per the
+   capability-level rule above.
+5. **Complete breaking-changes list, version by version (upgrade/migration guides only)** — the
+   direct output of the Step 2 changelog research, omitted only for pure greenfield-implementation
+   guides. Group entries by the version that introduced each change; for every single change
+   extracted in Step 2 (not a curated "notable changes" shortlist — every one), give:
+   - What changed — the literal old vs. new API/behavior/config key/default.
+   - Exactly how the future agent checks whether *its* target project is affected — a literal
+     `grep`/search pattern, file path, or config key to look for, never "check if you use X" left
+     unresolved into a command.
+   - Exactly what to change if it is affected, and what happens if the check comes back negative
+     (usually: skip this entry, nothing to do).
+   Do not compress this list to save space. An entry that affects few target projects still costs an
+   unaffected agent nothing (it runs the check, gets a negative result, moves on) — but omitting it
+   costs an affected agent a broken upgrade with no warning.
+6. **Step-by-step implementation plan template** — the real content. Ordered phases/steps, each
    with:
    - What to do and why (not just the action — the reasoning, so the agent can adapt sensibly if
      its target project deviates slightly).
@@ -140,13 +201,17 @@ complexity — a small, well-scoped guide shouldn't be padded to hit a template)
    - Concrete code patterns or snippets wherever they're genuinely universal, clearly marked as
      illustrative rather than copy-paste-exact for every stack.
    - Known pitfalls/gotchas specific to this kind of change — the things that predictably go wrong.
-6. **Verification steps** — how to confirm the change actually worked: what tests to run or write,
+     For upgrade guides, cross-reference the breaking-changes list in item 5 by version rather than
+     re-deriving pitfalls from scratch.
+7. **Verification steps** — how to confirm the change actually worked: what tests to run or write,
    manual checks, specific regressions to watch for.
-7. **Rollback / risk notes** — for upgrades or migrations specifically: how to back out cleanly if
+8. **Rollback / risk notes** — for upgrades or migrations specifically: how to back out cleanly if
    something goes wrong mid-way. Omit for pure greenfield-implementation guides where this doesn't
    apply.
-8. **References** — every source actually consulted in Step 2, with links. Omit the section
-   entirely if Step 2 was skipped rather than leaving it empty.
+9. **References** — every source actually consulted in Step 2, with links. For upgrade guides, this
+   must include every per-version changelog/upgrade-notes page actually fetched in Step 2 — not just
+   the two endpoint versions. Omit the section entirely if Step 2 was skipped rather than leaving it
+   empty.
 
 ## Step 4: Write the file
 
@@ -160,4 +225,6 @@ a different name — don't silently clobber a previously written guide.
 State the file path written, one line on what the guide covers, whether Step 2 research happened
 (and what was verified) or was skipped (and why), and flag anything in the guide that rests on an
 assumption rather than verified fact — so the user can double check it before this guide gets used
-for real.
+for real. For upgrade/migration guides, explicitly list which versions between start and target had
+their changelog/upgrade notes fetched and which (if any) couldn't be located — don't let a gap pass
+silently.
